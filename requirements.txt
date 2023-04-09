@@ -1,0 +1,6 @@
+llama-index
+langchain
+guardrails-ai
+openai
+qdrant-client
+python-dotenv
