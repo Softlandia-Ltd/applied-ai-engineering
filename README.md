@@ -2,9 +2,16 @@
 
 A complete AI engineering example using the best tools and tricks of the trade.
 
+The first example shows how to extract structured data from blog posts.
+
 Install the requirements into a new virtual environment
 ```sh
 pip install -r requirements.txt
+```
+
+Run the blog scraping script
+```sh
+python get_blog_posts.py
 ```
 
 ## Sample output
