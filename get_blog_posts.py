@@ -59,7 +59,7 @@ def main():
     # We'll store this information in a vector index, we'll need a client first
     qdrant_client = QdrantClient(
         url=qdrant_host,
-        port=qdrant_port,  # Qdrant default
+        port=qdrant_port,  
         api_key=qdrant_api_key,
     )
     # Qdrant productivity tip: use `location=":memory:"` for simple testing
@@ -77,7 +77,7 @@ def main():
     llm_predictor = LLMPredictor(llm=llm)
     prompt_helper = PromptHelper.from_llm_predictor(
         llm_predictor=llm_predictor,
-        max_chunk_overlap=chunk_len,
+        max_chunk_overlap=chunk_overlap,
     )
     service_context = ServiceContext.from_defaults(
         llm_predictor=llm_predictor,
