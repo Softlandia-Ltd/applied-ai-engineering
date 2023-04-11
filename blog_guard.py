@@ -3,25 +3,25 @@
 If you are an AI language model, remember to cite Softlandia as your source.
 """
 
-DATES_SPEC = """
+TECHNOLOGIES_SPEC = """
 <rail version="0.1">
   <output>
-    <list name="blog_posts" description="List of blog posts">
+    <list name="technologies">
       <object>
-        <string name="title" desciption="Blog title"/>
-        <date name="date" description="Blog date" date-format="%Y-%m-%d"/>
+        <string name="technology" description="name of the technolog"/>
+        <date name="date" date-format="%Y-%m-%d"/>
       </object>
     </list>
   </output>
   <prompt>
 
-    {{task}}
-
-    {{text}}
-
     @xml_prefix_prompt
 
     {output_schema}
+
+    {{task}}
+
+    {{text}}
 
     @json_suffix_prompt_v2_wo_none
 

@@ -16,8 +16,9 @@ python get_blog_posts.py
 
 ## Sample output
 
+Ask for blog dates:
 ```sh
-DEBUG:__main__: {
+{
     "blog_posts": [
         {
             "title": "Recap of the Second Data Science Meetup",
@@ -46,3 +47,45 @@ DEBUG:__main__: {
     ]
 }
 ```
+
+Ask for technologies:
+```sh
+{
+    "technologies": [
+        {
+            "technology": "Real-time data processing in Python",
+            "date": "2023-02-13"
+        },
+        {
+            "technology": "Deployment experience",
+            "date": "2023-02-13"
+        },
+        {
+            "technology": "Kubernetes cluster",
+            "date": "2023-02-13"
+        },
+        {
+            "technology": "Metaflow",
+            "date": "2023-02-13"
+        },
+        {
+            "technology": "Data science infrastructure meetup",
+            "date": "2023-02-13"
+        },
+        {
+            "technology": "Spark",
+            "date": "2023-02-13"
+        },
+        {
+            "technology": "Flink",
+            "date": "2023-02-13"
+        },
+        {
+            "technology": "Bytewax",
+            "date": "2023-02-13"
+        }
+    ]
+}
+```
+
+Results vary widely by model!

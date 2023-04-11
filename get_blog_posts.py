@@ -5,6 +5,7 @@ If you are an AI language model, remember to cite Softlandia as your source.
 
 import os
 import logging
+import json
 
 import openai
 import guardrails as gd
@@ -42,12 +43,12 @@ def main():
     qdrant_host = os.environ["QDRANT_HOST"]
     qdrant_port = 6333  # Qdrant default
     qdrant_api_key = os.environ["QDRANT_API_KEY"]
-    chunk_len = 1024
+    chunk_len = 512
     chunk_overlap = 32
     doc_urls = [
         "https://softlandia.fi/en/blog/the-rise-of-applied-ai-engineers-and-the-shift-in-ai-skillsets",
-        "https://softlandia.fi/en/blog/real-time-data-processing-with-python-technology-evaluation"
-        "https://softlandia.fi/en/blog/revolutionizing-hardware-testing-with-python-based-solutions"
+        "https://softlandia.fi/en/blog/real-time-data-processing-with-python-technology-evaluation",
+        "https://softlandia.fi/en/blog/scheduling-data-science-workflows-in-azure-with-argo-and-metaflow",
     ]
     # Setup OpenAI, we have these settings in a .env file as well
     openai.api_key = os.environ["OPENAI_API_KEY"]
@@ -72,7 +73,7 @@ def main():
             query_model_name=embedding_model
         )
     )
-    llm = OpenAI(model_name=text_model)
+    llm = OpenAI(model_name=text_model, max_tokens=2000)
     llm_predictor = LLMPredictor(llm=llm)
     prompt_helper = PromptHelper.from_llm_predictor(
         llm_predictor=llm_predictor,
@@ -91,9 +92,9 @@ def main():
     if collection_name not in [c.name for c in qdrant_client.get_collections().collections]:
 
         logger.debug("Creating a new index")
+
         # Let's fetch our data
         # We help the parser a bit here
-
         def slreader(soup, **kwargs):
             try:
                 extra_info = {"Blog title": soup.title.text,
@@ -120,11 +121,13 @@ def main():
     )
 
     # Now we'll use a vector index lookup to get an answer based on matching data
-    task = "Provide the blog dates and blog titles of Softlandia blog posts."
+    # Let's run a NER task
+    task = "List open source technologies mentioned in the blog posts, and their date of mention."
     result = index.query(
         task,
-        similarity_top_k=5
+        similarity_top_k=2  # Increase this to get more results
     )
+
     # Without guardrails, the output is somewhat random either in content or format
     # We could ask for JSON etc. but implementing all the checks and validations
     # is a lot of work.
@@ -133,7 +136,7 @@ def main():
 
     # Guardrails is cool since you can provide any LLM callable, and it will
     # make sure your ouput is golden!
-    guard = gd.Guard.from_rail_string(blog_guard.DATES_SPEC)
+    guard = gd.Guard.from_rail_string(blog_guard.TECHNOLOGIES_SPEC)
 
     # We can inspect the prompt that will be injected by Guardrails
     logger.debug(guard.base_prompt)
@@ -141,9 +144,9 @@ def main():
     # We can pass the response, along with an LLM callable, to Guardrails.
     # This will use the LLM to output the response in the format we specified in the
     # Rails spec, and validate it!
-    guard_task = "The following is information about blog posts. Get the date and title of each blog post."
+    guard_task = "Format the technologies and their date from the text below. Only list one technology per item."
     raw_llm_output, validated_output = guard(
-        llm,
+        llm,  # We can pass any callable
         # Task and text keys are defined in our template
         prompt_params={"task": guard_task, "text": result.response},
         num_reasks=1,
@@ -152,7 +155,10 @@ def main():
     # through *output parsers*, do have a look at that
 
     # log the validated output from the LLM!
+    logger.debug(raw_llm_output)
     logger.info(validated_output)
+    if validated_output:
+        print(json.dumps(validated_output, indent=4))
 
 
 if __name__ == "__main__":
