@@ -81,7 +81,11 @@ def main():
     llm_predictor = LLMPredictor(llm=llm)
     # Llama-index parameterization
     splitter = TokenTextSplitter(chunk_size=chunk_len, chunk_overlap=chunk_overlap)
-    node_parser = SimpleNodeParser(text_splitter=splitter, include_extra_info=True)
+    node_parser = SimpleNodeParser(
+        text_splitter=splitter,
+        include_extra_info=True,
+        include_prev_next_rel=False
+    )
     prompt_helper = PromptHelper.from_llm_predictor(
         llm_predictor=llm_predictor,
         # max_chunk_overlap=chunk_overlap,
@@ -91,13 +95,13 @@ def main():
         llm_predictor=llm_predictor,
         prompt_helper=prompt_helper,
         embed_model=embed_model,
+        node_parser=node_parser,
         # chunk_size_limit=chunk_len,
     )
 
     # If we previously didn't create the index, we'll do it now.
     # By adding this check we can rerun the script without embedding the data
     # every time.
-    qdrant_client.delete_collection(collection_name)
     if collection_name not in [c.name for c in qdrant_client.get_collections().collections]:
 
         logger.debug("Creating a new index")
