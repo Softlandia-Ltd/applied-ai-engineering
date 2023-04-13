@@ -8,7 +8,7 @@ TECHNOLOGIES_SPEC = """
   <output>
     <list name="technologies">
       <object>
-        <string name="technology" description="name of the technology"/>
+        <string name="item" description="name of the item"/>
         <date name="date" date-format="%Y-%m-%d"/>
       </object>
     </list>

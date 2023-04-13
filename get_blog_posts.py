@@ -11,10 +11,12 @@ import openai
 import guardrails as gd
 # We like to wrap our LLM calls to langchain models, to have a more generic interface
 from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain.text_splitter import TokenTextSplitter
 from langchain.llms import OpenAI
 # We're using the new name llama_index, but you can find lots of example with the old name
 # gpt_index as well
 from gpt_index import download_loader
+from gpt_index.node_parser import SimpleNodeParser
 from gpt_index.indices.vector_store.vector_indices import GPTQdrantIndex
 from gpt_index import LLMPredictor, ServiceContext, PromptHelper, LangchainEmbedding
 # our vector store of choice, +1 for rust+python :)
@@ -39,11 +41,11 @@ def main():
     dotenv.load_dotenv(override=True)
 
     # Let's create some variables we need, get the sensitive Qdrant details from env
-    collection_name = "softlandia_blog_posts"
+    collection_name = "softlandia_blogs"
     qdrant_host = os.environ["QDRANT_HOST"]
     qdrant_port = 6333  # Qdrant default
     qdrant_api_key = os.environ["QDRANT_API_KEY"]
-    chunk_len = 512
+    chunk_len = 256
     chunk_overlap = 32
     doc_urls = [
         "https://softlandia.fi/en/blog/the-rise-of-applied-ai-engineers-and-the-shift-in-ai-skillsets",
@@ -70,25 +72,32 @@ def main():
     # We're wrapping the Langchain models to Llama-index here,
     embed_model = LangchainEmbedding(
         OpenAIEmbeddings(
-            query_model_name=embedding_model
+            model=embedding_model
         )
     )
     llm = OpenAI(model_name=text_model, max_tokens=2000)
+    # from langchain.chat_models import ChatOpenAI
+    # llm = ChatOpenAI(model_name="gpt-3.5-turbo", max_tokens=2000)
     llm_predictor = LLMPredictor(llm=llm)
+    # Llama-index parameterization
+    splitter = TokenTextSplitter(chunk_size=chunk_len, chunk_overlap=chunk_overlap)
+    node_parser = SimpleNodeParser(text_splitter=splitter, include_extra_info=True)
     prompt_helper = PromptHelper.from_llm_predictor(
         llm_predictor=llm_predictor,
-        max_chunk_overlap=chunk_overlap,
+        # max_chunk_overlap=chunk_overlap,
+        # chunk_size_limit=chunk_len,
     )
     service_context = ServiceContext.from_defaults(
         llm_predictor=llm_predictor,
         prompt_helper=prompt_helper,
         embed_model=embed_model,
-        chunk_size_limit=chunk_len,
+        # chunk_size_limit=chunk_len,
     )
 
     # If we previously didn't create the index, we'll do it now.
     # By adding this check we can rerun the script without embedding the data
     # every time.
+    qdrant_client.delete_collection(collection_name)
     if collection_name not in [c.name for c in qdrant_client.get_collections().collections]:
 
         logger.debug("Creating a new index")
@@ -122,7 +131,7 @@ def main():
 
     # Now we'll use a vector index lookup to get an answer based on matching data
     # Let's run a NER task
-    task = "List open source technologies mentioned in the blog posts, and their date of mention."
+    task = "List technologies, tools and software that are mentioned, and the respective dates."
     result = index.query(
         task,
         similarity_top_k=2  # Increase this to get more results
@@ -133,6 +142,9 @@ def main():
     # is a lot of work.
     # This is the response we get
     logger.debug(result.response)
+    logger.debug("Source nodes:")
+    for node in result.source_nodes:
+        logger.debug(node)
 
     # Guardrails is cool since you can provide any LLM callable, and it will
     # make sure your ouput is golden!
@@ -144,7 +156,7 @@ def main():
     # We can pass the response, along with an LLM callable, to Guardrails.
     # This will use the LLM to output the response in the format we specified in the
     # Rails spec, and validate it!
-    guard_task = "Format the technologies and their date from the text below. Only list one technology per item."
+    guard_task = "The following is a list of technologies and dates when they were mentioned. Format the items and their date into a list."
     raw_llm_output, validated_output = guard(
         llm,  # We can pass any callable
         # Task and text keys are defined in our template
