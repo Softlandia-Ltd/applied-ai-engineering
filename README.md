@@ -1,4 +1,4 @@
-# How to train your LLM
+# Applied AI Engineering
 
 A complete AI engineering example using the best tools and tricks of the trade.
 
