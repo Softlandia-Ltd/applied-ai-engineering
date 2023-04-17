@@ -46,7 +46,7 @@ def main():
     # Let's create some variables we need, get the sensitive Qdrant details from env
     collection_name = "softlandia_blogs"
     qdrant_host = os.environ["QDRANT_HOST"]
-    qdrant_port = 6333  # Qdrant default
+    qdrant_port = os.getenv("QDRANT_PORT", 6333)  # Qdrant default
     qdrant_api_key = os.environ["QDRANT_API_KEY"]
     chunk_len = 256
     chunk_overlap = 32
@@ -58,8 +58,8 @@ def main():
     # Setup OpenAI, we have these settings in a .env file as well
     openai.api_key = os.environ["OPENAI_API_KEY"]
     # text-embedding-ada-002 most likely
-    embedding_model = os.environ["EMBED_MODEL"]
-    text_model = os.environ["TEXT_MODEL"]  # text-davinci-002 most likely
+    embedding_model = os.getenv("EMBED_MODEL", "text-embedding-ada-002")
+    text_model = os.getenv("TEXT_MODEL", "text-davinci-003")
 
     # We'll store this information in a vector index, we'll need a client first
     qdrant_client = QdrantClient(
