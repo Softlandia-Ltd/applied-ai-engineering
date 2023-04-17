@@ -9,16 +9,19 @@ import json
 
 import openai
 import guardrails as gd
+
 # We like to wrap our LLM calls to langchain models, to have a more generic interface
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.text_splitter import TokenTextSplitter
 from langchain.llms import OpenAI
+
 # We're using the new name llama_index, but you can find lots of example with the old name
 # gpt_index as well
 from gpt_index import download_loader
 from gpt_index.node_parser import SimpleNodeParser
 from gpt_index.indices.vector_store.vector_indices import GPTQdrantIndex
 from gpt_index import LLMPredictor, ServiceContext, PromptHelper, LangchainEmbedding
+
 # our vector store of choice, +1 for rust+python :)
 from qdrant_client import QdrantClient
 import dotenv
@@ -61,7 +64,7 @@ def main():
     # We'll store this information in a vector index, we'll need a client first
     qdrant_client = QdrantClient(
         url=qdrant_host,
-        port=qdrant_port,  
+        port=qdrant_port,
         api_key=qdrant_api_key,
     )
     # Qdrant productivity tip: use `location=":memory:"` for simple testing
@@ -70,26 +73,16 @@ def main():
     # 1. creating embeddings
     # 2. getting responses
     # We're wrapping the Langchain models to Llama-index here,
-    embed_model = LangchainEmbedding(
-        OpenAIEmbeddings(
-            model=embedding_model
-        )
-    )
-    llm = OpenAI(model_name=text_model, max_tokens=2000)
-    # from langchain.chat_models import ChatOpenAI
-    # llm = ChatOpenAI(model_name="gpt-3.5-turbo", max_tokens=2000)
+    embed_model = LangchainEmbedding(OpenAIEmbeddings(model=embedding_model))
+    llm = OpenAI(model_name=text_model, max_tokens=2000, temperature=0)
     llm_predictor = LLMPredictor(llm=llm)
     # Llama-index parameterization
     splitter = TokenTextSplitter(chunk_size=chunk_len, chunk_overlap=chunk_overlap)
     node_parser = SimpleNodeParser(
-        text_splitter=splitter,
-        include_extra_info=True,
-        include_prev_next_rel=False
+        text_splitter=splitter, include_extra_info=True, include_prev_next_rel=False
     )
     prompt_helper = PromptHelper.from_llm_predictor(
         llm_predictor=llm_predictor,
-        # max_chunk_overlap=chunk_overlap,
-        # chunk_size_limit=chunk_len,
     )
     service_context = ServiceContext.from_defaults(
         llm_predictor=llm_predictor,
@@ -102,26 +95,28 @@ def main():
     # If we previously didn't create the index, we'll do it now.
     # By adding this check we can rerun the script without embedding the data
     # every time.
-    if collection_name not in [c.name for c in qdrant_client.get_collections().collections]:
-
+    if collection_name not in [
+        c.name for c in qdrant_client.get_collections().collections
+    ]:
         logger.debug("Creating a new index")
 
         # Let's fetch our data
         # We help the parser a bit here
         def slreader(soup, **kwargs):
             try:
-                extra_info = {"Blog title": soup.title.text,
-                              "Blog date": soup.time.text}
+                extra_info = {
+                    "Blog title": soup.title.text,
+                    "Blog date": soup.time.text,
+                }
             except:
                 extra_info = {}
             return soup.text, extra_info
+
         reader = download_loader("BeautifulSoupWebReader")
         loader = reader(website_extractor={"softlandia.fi": slreader})
-        documents = loader.load_data(
-            urls=doc_urls, custom_hostname="softlandia.fi")
+        documents = loader.load_data(urls=doc_urls, custom_hostname="softlandia.fi")
 
     else:
-
         # Found existing collection. We can create the index from an empty list,
         # and we'll have access to the data we previously embedded.
         documents = []
@@ -138,7 +133,7 @@ def main():
     task = "List technologies, tools and software that are mentioned, and the respective dates."
     result = index.query(
         task,
-        similarity_top_k=2  # Increase this to get more results
+        similarity_top_k=2,  # Increase this to get more results
     )
 
     # Without guardrails, the output is somewhat random either in content or format
@@ -160,7 +155,7 @@ def main():
     # We can pass the response, along with an LLM callable, to Guardrails.
     # This will use the LLM to output the response in the format we specified in the
     # Rails spec, and validate it!
-    guard_task = "The following is a list of technologies and dates when they were mentioned. Format the items and their date into a list."
+    guard_task = "The following is a list of technologies and dates when they were mentioned. Return the items and their dates as a JSON object."
     raw_llm_output, validated_output = guard(
         llm,  # We can pass any callable
         # Task and text keys are defined in our template
