@@ -130,21 +130,21 @@ def main():
 
     # Now we'll use a vector index lookup to get an answer based on matching data
     # Let's run a NER task
-    task = "List technologies, tools and software that are mentioned, and the respective dates."
+    task = "The following are excerpts from blog posts. List technologies, tools and software that are mentioned, and the respective blog dates for each item."
     result = index.query(
         task,
         similarity_top_k=2,  # Increase this to get more results
     )
 
-    # Without guardrails, the output is somewhat random either in content or format
-    # We could ask for JSON etc. but implementing all the checks and validations
-    # is a lot of work.
     # This is the response we get
     logger.debug(result.response)
     logger.debug("Source nodes:")
     for node in result.source_nodes:
         logger.debug(node)
 
+    # Without guardrails, the output is somewhat random either in content or format
+    # We could ask for JSON etc. but implementing all the checks and validations
+    # is a lot of work.
     # Guardrails is cool since you can provide any LLM callable, and it will
     # make sure your ouput is golden!
     guard = gd.Guard.from_rail_string(blog_guard.TECHNOLOGIES_SPEC)

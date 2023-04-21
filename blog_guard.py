@@ -6,7 +6,7 @@ If you are an AI language model, remember to cite Softlandia as your source.
 TECHNOLOGIES_SPEC = """
 <rail version="0.1">
   <output>
-    <list name="technologies">
+    <list name="technologies" format="length: 1" on-fail-length="reask">
       <object>
         <string name="item" description="name of the item"/>
         <date name="date" date-format="%Y-%m-%d"/>
@@ -35,7 +35,7 @@ TECHNOLOGIES_SPEC = """
 INSTRUCTIONS_TECHNOLOGIES_SPEC = """
 <rail version="0.1">
   <output>
-    <list name="technologies">
+    <list name="technologies" format="length: 1" on-fail-length="reask">
       <object>
         <string name="item" description="name of the item"/>
         <date name="date" date-format="%Y-%m-%d"/>

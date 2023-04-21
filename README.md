@@ -16,7 +16,7 @@ python get_blog_posts.py
 
 ## Sample output
 
-Ask for blog dates:
+Ask for blog titles and dates:
 ```sh
 {
     "blog_posts": [
