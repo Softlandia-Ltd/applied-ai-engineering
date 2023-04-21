@@ -17,10 +17,10 @@ from langchain.llms import OpenAI
 
 # We're using the new name llama_index, but you can find lots of example with the old name
 # gpt_index as well
-from gpt_index import download_loader
-from gpt_index.node_parser import SimpleNodeParser
-from gpt_index.indices.vector_store.vector_indices import GPTQdrantIndex
-from gpt_index import LLMPredictor, ServiceContext, PromptHelper, LangchainEmbedding
+from llama_index import download_loader
+from llama_index.node_parser import SimpleNodeParser
+from llama_index.indices.vector_store.vector_indices import GPTQdrantIndex
+from llama_index import LLMPredictor, ServiceContext, PromptHelper, LangchainEmbedding
 
 # our vector store of choice, +1 for rust+python :)
 from qdrant_client import QdrantClient

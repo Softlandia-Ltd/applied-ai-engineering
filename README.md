@@ -2,7 +2,8 @@
 
 A complete AI engineering example using the best tools and tricks of the trade.
 
-The first example shows how to extract structured data from blog posts.
+This repository shows how to extract structured data from blog posts. It can easily be
+adapted to chat or generative tasks as well.
 
 Install the requirements into a new virtual environment
 ```sh
@@ -53,35 +54,27 @@ Ask for technologies:
 {
     "technologies": [
         {
-            "technology": "Real-time data processing in Python",
+            "item": "Cloud Native Solutions",
+            "date": "2023-04-05"
+        },
+        {
+            "item": "Sensor Fusion & IoT",
+            "date": "2023-04-05"
+        },
+        {
+            "item": "Software Consulting",
+            "date": "2023-04-05"
+        },
+        {
+            "item": "Kubernetes",
             "date": "2023-02-13"
         },
         {
-            "technology": "Deployment experience",
+            "item": "Python APIs",
             "date": "2023-02-13"
         },
         {
-            "technology": "Kubernetes cluster",
-            "date": "2023-02-13"
-        },
-        {
-            "technology": "Metaflow",
-            "date": "2023-02-13"
-        },
-        {
-            "technology": "Data science infrastructure meetup",
-            "date": "2023-02-13"
-        },
-        {
-            "technology": "Spark",
-            "date": "2023-02-13"
-        },
-        {
-            "technology": "Flink",
-            "date": "2023-02-13"
-        },
-        {
-            "technology": "Bytewax",
+            "item": "Eventbrite",
             "date": "2023-02-13"
         }
     ]
@@ -89,3 +82,5 @@ Ask for technologies:
 ```
 
 Results vary widely by model!
+
+Find more details in our [blog](https://softlandia.fi/en/blog/tools-of-the-ai-engineer)!
