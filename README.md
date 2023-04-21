@@ -12,7 +12,7 @@ pip install -r requirements.txt
 
 Run the blog scraping script
 ```sh
-python get_blog_posts.py
+python extract_blog_data.py
 ```
 
 ## Sample output
